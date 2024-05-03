@@ -1,18 +1,33 @@
 ---
 import Layout from '../layouts/Layout.astro';
+import DataTable from '../components/DataTable.astro';
+import Chart from '../components/Chart.astro';
+import { getVehicles} from '../lib/dataGenerator.js';
+
+
+const vehicles = getVehicles();
+
 ---
 
 <Layout title="Chart">
 	<main>
-		
+		<div class="container">
+			<h1>Chart</h1>
+			<div class="data-chart">
+				<div>
+					<DataTable vehicles={vehicles} />
+				</div>
+				<div>
+					<Chart />
+				</div>
+			</div>
+		</div>
 	</main>
 </Layout>
 
 <style>
 	main {
 		margin: auto;
-		padding: 1rem;
-		width: 800px;
 		max-width: calc(100% - 2rem);
 		color: white;
 		font-size: 20px;
@@ -65,4 +80,11 @@ import Layout from '../layouts/Layout.astro';
 		gap: 2rem;
 		padding: 0;
 	}
+
+
+	.data-chart {
+		display: grid;
+		grid-template-columns: 1fr 1fr;
+	}
+
 </style>

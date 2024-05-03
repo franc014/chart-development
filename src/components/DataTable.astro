@@ -1,0 +1,34 @@
+---
+const { vehicles } = Astro.props;
+console.log({vehicles});
+
+---
+<table>
+  <tr>
+    <th>Id</th>
+    <th>Label</th>
+    <th>Km</th>
+    <th>Price</th>
+   
+  </tr>
+  {vehicles.map((vehicle) => (
+    <tr>
+      <td>{vehicle.id}</td>
+      <td>{vehicle.label}</td>
+      <td>{vehicle.point[0]}</td>
+      <td>{vehicle.point[1]}</td>
+     
+    </tr>
+  ))}
+ 
+</table>
+<style>
+  table {
+    border-collapse: collapse;
+    border: 1px solid white;
+  }
+  td,th {
+    border: 1px solid white;
+    padding: 5px;
+  }
+</style>

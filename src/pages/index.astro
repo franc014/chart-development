@@ -18,7 +18,7 @@ const vehicles = getVehicles();
 					<DataTable vehicles={vehicles} />
 				</div>
 				<div>
-					<Chart />
+					<Chart vehicles={vehicles}/>
 				</div>
 			</div>
 		</div>
@@ -46,7 +46,6 @@ const vehicles = getVehicles();
 		font-size: 4rem;
 		font-weight: 700;
 		line-height: 1;
-		text-align: center;
 		margin-bottom: 1em;
 	}
 	.text-gradient {

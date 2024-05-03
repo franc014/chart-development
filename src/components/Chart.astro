@@ -1,3 +1,42 @@
-<canvas>
+---
+const { vehicles } = Astro.props;
+
+console.log({vehicles});
+
+
+---
+<div class="canvas-container" data-vehicles={JSON.stringify(vehicles)}>
+  <canvas>
+    
+  </canvas>
+</div>
+
+<style>
+  .canvas-container {
+    background-color: hsl(48, 95%, 93%);
+    position: fixed;
+    top: 40%;
+    right: 0;
+    transform: translate(0, -50%);
+    
+  }
+</style>
+<script>
+  import Chart from '../lib/chart.js';
+  const canvasContainer = document.querySelector(".canvas-container");
+  const vehicles = JSON.parse(canvasContainer.dataset.vehicles);
   
-</canvas>
+  const options = {
+    size: 500,
+    axesLabels: ["Kilometers", "Price"],
+    styles: {
+      basic: 'gray',
+      sport: 'red',
+    }
+  }
+
+  const chart = new Chart(vehicles,options,document.querySelector("canvas"));  
+
+  console.log(chart);
+
+</script>

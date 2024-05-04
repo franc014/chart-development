@@ -7,4 +7,24 @@ graphics.drawPoint = function (ctx, loc, color = "blueviolet", size = 8) {
   ctx.fill();
   ctx.closePath();
 };
+
+graphics.drawText = function (
+  ctx,
+  {
+    text,
+    loc,
+    align = "center",
+    vAlign = "middle",
+    size = 20,
+    color = "hsl(232, 75%, 33%)",
+  }
+) {
+  console.log(loc);
+  ctx.textAlign = align;
+  ctx.textBaseline = vAlign;
+  ctx.font = `${size}px sans-serif`;
+  ctx.fillStyle = color;
+  ctx.fillText(text, ...loc);
+};
+
 export default graphics;

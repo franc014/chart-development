@@ -15,13 +15,13 @@ export function getVehicles() {
 
     const price =
       math.remap(3000, 300000, 9000, 900, km) +
-      math.lerp(-2000, 2000, Math.random()) +
-      (type === "sport" ? 5000 : 0); // we add variants
+      math.lerp(-2000, 2000, Math.random()) + //include variants: negative as a joke to pay for car that has worked a lot (too old) :-)
+      (type === "sport" ? 8000 : 0); // extra variant to give sport cars more weight
 
     data.push({
       id: i,
       label: type,
-      point: [math.format(km), math.format(price)],
+      point: [math.format(km, 2), math.format(price, 2)],
     });
   }
   return data;

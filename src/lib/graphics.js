@@ -19,7 +19,6 @@ graphics.drawText = function (
     color = "hsl(232, 75%, 33%)",
   }
 ) {
-  console.log(loc);
   ctx.textAlign = align;
   ctx.textBaseline = vAlign;
   ctx.font = `${size}px sans-serif`;

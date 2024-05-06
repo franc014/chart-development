@@ -12,11 +12,101 @@ class Chart {
     this.margin = options.size * 0.1;
 
     this.transparency = "0.5";
+
+    this.dataTrans = {
+      offset: [0, 0],
+      scale: 1,
+    };
+
+    this.dragInfo = {
+      start: [0, 0],
+      end: [0, 0],
+      offset: [0, 0],
+      dragging: false,
+    };
+
     this.pixelBounds = this.#getPixelBounds();
     this.dataBounds = this.#getDataBounds();
+    this.defaultDataBounds = this.#getDataBounds();
 
     this.#draw();
+
+    this.#addEventListeners();
   }
+
+  #addEventListeners() {
+    const { canvas, dataTrans, dragInfo } = this;
+
+    canvas.addEventListener("mousedown", (e) => {
+      //here we need the data coordinates
+      const dataLoc = this.#getMouse(e, true);
+      dragInfo.start = dataLoc;
+      dragInfo.dragging = true;
+    });
+
+    canvas.addEventListener("mousemove", (e) => {
+      if (dragInfo.dragging) {
+        const dataLoc = this.#getMouse(e, true);
+        dragInfo.end = dataLoc;
+        //substract and also scale
+        dragInfo.offset = math.scale(
+          math.subtract(dragInfo.start, dragInfo.end),
+          dataTrans.scale
+        );
+        const newOffset = math.add(dataTrans.offset, dragInfo.offset);
+
+        this.#updateDataBounds(newOffset, dataTrans.scale);
+        this.#draw();
+      }
+    });
+
+    canvas.addEventListener("mouseup", (e) => {
+      dataTrans.offset = math.add(dataTrans.offset, dragInfo.offset);
+      dragInfo.dragging = false;
+    });
+
+    canvas.addEventListener("wheel", (e) => {
+      e.preventDefault();
+      const dir = Math.sign(e.deltaY);
+      const step = 0.02;
+      dataTrans.scale += dir * step;
+      //clamping the scale between the initial step and 2
+      dataTrans.scale = Math.max(step, Math.min(2, dataTrans.scale));
+      this.#updateDataBounds(dataTrans.offset, dataTrans.scale);
+      this.#draw();
+    });
+  }
+
+  #updateDataBounds(newOffset, scale) {
+    const { dataBounds, defaultDataBounds: def } = this;
+    dataBounds.left = def.left + newOffset[0];
+    dataBounds.top = def.top + newOffset[1];
+    dataBounds.right = def.right + newOffset[0];
+    dataBounds.bottom = def.bottom + newOffset[1];
+
+    //center of data as focal point
+    const center = [
+      (dataBounds.left + dataBounds.right) / 2,
+      (dataBounds.top + dataBounds.bottom) / 2,
+    ];
+    //modify bounds according to scale, the center point and original value
+    //square the scale to make the effect more smooth and increase always by the same amount
+    dataBounds.left = math.lerp(center[0], dataBounds.left, scale ** 2);
+    dataBounds.top = math.lerp(center[1], dataBounds.top, scale ** 2);
+    dataBounds.right = math.lerp(center[0], dataBounds.right, scale ** 2);
+    dataBounds.bottom = math.lerp(center[1], dataBounds.bottom, scale ** 2);
+  }
+
+  #getMouse(e, dataSpace = false) {
+    const { canvas } = this;
+    const rect = canvas.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+    if (dataSpace) {
+      return math.remapPoint(this.pixelBounds, this.defaultDataBounds, [x, y]);
+    }
+  }
+
   #getPixelBounds() {
     const { canvas, margin } = this;
     const bounds = {
@@ -68,7 +158,6 @@ class Chart {
     const { ctx, canvas, axesLabels, margin } = this;
     const { left, top, right, bottom } = this.pixelBounds;
 
-    console.log({ left, top, right, bottom });
     graphics.drawText(ctx, {
       text: axesLabels[0],
       loc: [canvas.width / 2, bottom + margin / 2],

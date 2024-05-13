@@ -48,4 +48,24 @@ math.format = (n, dec) => {
   return n.toFixed(dec);
 };
 
+math.distance = (p1, p2) => {
+  console.log(p1, p2);
+  return Math.sqrt(Math.pow(p1[0] - p2[0], 2) + Math.pow(p1[1] - p2[1], 2));
+};
+
+math.getNearest = (location, points) => {
+  let minDist = Number.MAX_SAFE_INTEGER;
+  let nearestIndex = 0;
+  for (let i = 0; i < points.length; i++) {
+    const point = points[i];
+    const dist = math.distance(location, point);
+
+    if (dist < minDist) {
+      minDist = dist;
+      nearestIndex = i;
+    }
+  }
+  return nearestIndex;
+};
+
 export default math;

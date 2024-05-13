@@ -5,13 +5,14 @@ class Chart {
     this.samples = samples;
     this.axesLabels = options.axesLabels;
     this.styles = options.styles;
+    this.icon = options.icon;
     this.canvas = canvas;
     this.canvas.width = options.size;
     this.canvas.height = options.size;
     this.ctx = this.canvas.getContext("2d");
     this.margin = options.size * 0.1;
 
-    this.transparency = "0.5";
+    this.transparency = "0.7";
 
     this.dataTrans = {
       offset: [0, 0],
@@ -58,6 +59,13 @@ class Chart {
         this.#updateDataBounds(newOffset, dataTrans.scale);
         this.#draw();
       }
+      const pixelLoc = this.#getMouse(e);
+      const pPoints = this.samples.map((s) =>
+        math.remapPoint(this.dataBounds, this.pixelBounds, s.point)
+      );
+      const index = math.getNearest(pixelLoc, pPoints);
+      const nearest = this.samples[index];
+      //highlight nearest point to the mouse
     });
 
     canvas.addEventListener("mouseup", (e) => {
@@ -105,6 +113,7 @@ class Chart {
     if (dataSpace) {
       return math.remapPoint(this.pixelBounds, this.defaultDataBounds, [x, y]);
     }
+    return [x, y];
   }
 
   #getPixelBounds() {
@@ -147,10 +156,23 @@ class Chart {
     const { ctx, samples, pixelBounds, dataBounds } = this;
 
     for (const sample of samples) {
-      const { point } = sample;
-
+      const { point, label } = sample;
       const pixelLocation = math.remapPoint(dataBounds, pixelBounds, point);
-      graphics.drawPoint(ctx, pixelLocation);
+      switch (this.icon) {
+        case "text":
+          graphics.drawText(ctx, {
+            text: this.styles[label].text,
+            loc: pixelLocation,
+            size: 12,
+          });
+          break;
+        case "image":
+          graphics.drawImage(ctx, this.styles[label].image, pixelLocation);
+          break;
+        default:
+          graphics.drawPoint(ctx, pixelLocation, this.styles[label].color);
+          break;
+      }
     }
   }
 

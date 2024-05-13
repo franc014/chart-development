@@ -23,6 +23,7 @@ console.log({vehicles});
 </style>
 <script>
   import Chart from '../lib/chart.js';
+import graphics from '../lib/graphics';
   const canvasContainer = document.querySelector(".canvas-container");
   const vehicles = JSON.parse(canvasContainer.dataset.vehicles);
   
@@ -30,12 +31,19 @@ console.log({vehicles});
     size: 500,
     axesLabels: ["Kilometers", "Price"],
     styles: {
-      basic: 'gray',
-      sport: 'red',
-    }
+      basic: {color:'hsl(212, 75%, 43%)',text: '🚙'},
+      sport: {color:'hsl(2, 85%, 63%)', text: '🚗'},
+    },
+    icon: 'image'
   }
 
-  const chart = new Chart(vehicles,options,document.querySelector("canvas"));  
+  graphics.generateImages(options.styles);
+
+
+  setTimeout(() => {
+    new Chart(vehicles,options,document.querySelector("canvas"));  
+  }, 100);
+  
 
 
 

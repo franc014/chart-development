@@ -1,7 +1,7 @@
 import math from "./math.js";
 import graphics from "./graphics.js";
 class Chart {
-  constructor(samples, options, canvas) {
+  constructor(samples, options, canvas, onClick = null) {
     this.samples = samples;
     this.axesLabels = options.axesLabels;
     this.styles = options.styles;
@@ -26,10 +26,14 @@ class Chart {
       dragging: false,
     };
 
+    this.onClick = onClick;
+
     this.pixelBounds = this.#getPixelBounds();
     this.dataBounds = this.#getDataBounds();
     this.defaultDataBounds = this.#getDataBounds();
-
+    //this.nearestSampleToMouse = null;
+    this.hoveredSample = null;
+    this.selectedSample = null;
     this.#draw();
 
     this.#addEventListeners();
@@ -57,7 +61,6 @@ class Chart {
         const newOffset = math.add(dataTrans.offset, dragInfo.offset);
 
         this.#updateDataBounds(newOffset, dataTrans.scale);
-        this.#draw();
       }
       const pixelLoc = this.#getMouse(e);
       const pPoints = this.samples.map((s) =>
@@ -65,7 +68,14 @@ class Chart {
       );
       const index = math.getNearest(pixelLoc, pPoints);
       const nearest = this.samples[index];
+      const dist = math.distance(pPoints[index], pixelLoc);
+      if (dist < this.margin / 2) {
+        this.hoveredSample = nearest;
+      } else {
+        this.hoveredSample = null;
+      }
       //highlight nearest point to the mouse
+      this.#draw();
     });
 
     canvas.addEventListener("mouseup", (e) => {
@@ -82,6 +92,16 @@ class Chart {
       dataTrans.scale = Math.max(step, Math.min(2, dataTrans.scale));
       this.#updateDataBounds(dataTrans.offset, dataTrans.scale);
       this.#draw();
+    });
+
+    canvas.addEventListener("click", (e) => {
+      if (this.hoveredSample) {
+        this.selectedSample = this.hoveredSample;
+        if (this.onClick) {
+          this.onClick(this.selectedSample);
+        }
+        this.#draw();
+      }
     });
   }
 
@@ -148,12 +168,36 @@ class Chart {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     this.#drawAxes();
     ctx.globalAlpha = this.transparency;
-    this.#drawSamples();
+    this.#drawSamples(this.samples);
     ctx.globalAlpha = 1;
+
+    if (this.hoveredSample) {
+      this.#emphasizeSample(this.hoveredSample);
+    }
+
+    if (this.selectedSample) {
+      this.#emphasizeSample(this.selectedSample, "hsl(52, 75%, 53%)");
+    }
   }
 
-  #drawSamples() {
-    const { ctx, samples, pixelBounds, dataBounds } = this;
+  #emphasizeSample(sample, color = "white") {
+    const { ctx, pixelBounds, dataBounds } = this;
+    const { point } = sample;
+    const pixelLocation = math.remapPoint(dataBounds, pixelBounds, point);
+    const gradient = ctx.createRadialGradient(
+      ...pixelLocation,
+      0,
+      ...pixelLocation,
+      this.margin
+    );
+    gradient.addColorStop(0, color);
+    gradient.addColorStop(1, "rgba(255, 255, 255, 0)");
+    graphics.drawPoint(ctx, pixelLocation, gradient, this.margin * 2);
+    this.#drawSamples([sample]);
+  }
+
+  #drawSamples(samples) {
+    const { ctx, pixelBounds, dataBounds } = this;
 
     for (const sample of samples) {
       const { point, label } = sample;
